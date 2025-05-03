@@ -1,0 +1,48 @@
+<launch>
+    <!-- Set TurtleBot3 model -->
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+
+    <!-- Load TurtleBot3 robot description -->
+    <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro'" />
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen"/>
+
+    <!-- Start the map server with an initial map -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find multi_map_navigation)/maps/room1.yaml" />
+
+    <!-- Start AMCL for localization -->
+    <node pkg="amcl" type="amcl" name="amcl">
+        <param name="odom_frame_id" value="odom"/>
+        <param name="base_frame_id" value="base_footprint"/>
+        <param name="global_frame_id" value="map"/>
+        <param name="initial_pose_x" value="0.0"/>
+        <param name="initial_pose_y" value="0.0"/>
+        <param name="initial_pose_a" value="0.0"/>
+        <param name="min_particles" value="100"/>
+        <param name="max_particles" value="5000"/>
+        <param name="update_min_d" value="0.2"/>
+        <param name="update_min_a" value="0.5"/>
+        <param name="transform_tolerance" value="0.5"/>
+        <param name="use_map_topic" value="true"/>
+        <param name="laser_max_beams" value="60"/>
+        <param name="laser_z_hit" value="0.5"/>
+        <param name="laser_z_short" value="0.05"/>
+        <param name="laser_z_max" value="0.05"/>
+        <param name="laser_z_rand" value="0.5"/>
+    </node>
+
+    <!-- Start move_base for navigation -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS" />
+        <rosparam file="$(find multi_map_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find multi_map_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find multi_map_navigation)/config/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find multi_map_navigation)/config/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find multi_map_navigation)/config/base_local_planner_params.yaml" command="load" />
+    </node>
+
+    <!-- Start the multi-map navigation node -->
+    <node pkg="multi_map_navigation" type="multi_map_navigation_node" name="multi_map_navigation_node" output="screen" />
+
+    <!-- Start RViz for visualization -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find multi_map_navigation)/config/rviz_config.rviz" unless="$(eval arg('model') == '')" />
+</launch>
