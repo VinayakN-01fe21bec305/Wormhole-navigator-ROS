@@ -134,15 +134,3 @@ rosrun rosbag record /scan /tf /trajectory /multi_map_navigation_node/multi_map_
 # Play demo (if demo.bag included)
 rosbag play demo.bag
 ```
-
-## Submission
-- **Repository**: [https://github.com/yourusername/multi_map_navigation](https://github.com/yourusername/multi_map_navigation)
-- **Zip (if required)**:
-  ```bash
-  cd ~/catkin_ws/src
-  zip -r multi_map_navigation.zip multi_map_navigation
-  ```
-
----
-*Author*: Vinay  
-*Date*: May 2025
